@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<job-scheduling-data xmlns="http://quartznet.sourceforge.net/JobSchedulingData"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ 				version="2.0">
+
+  <processing-directives>
+    <overwrite-existing-data>true</overwrite-existing-data>
+  </processing-directives>
+
+  <schedule>
+ 
+    <job>
+      <name>HelloWorldTask</name>
+      <group>jobGroup1</group>
+      <description>定时任务配置</description>
+      <job-type>App.ScheduleTask.HelloWorldTask, WindowsServiceTaskDemo</job-type>
+      <durable>true</durable>
+      <recover>false</recover>
+    </job>
+
+    <trigger>
+      <cron>
+        <name>HelloWorldTaskTrigger</name>
+        <group>triggerGroup1</group>
+        <description>定时任务配置触发器</description>
+        <job-name>HelloWorldTask</job-name>
+        <job-group>jobGroup1</job-group>
+        <cron-expression>0 * * * * ? *</cron-expression>
+      </cron>
+    </trigger>
+ 
+  </schedule>
+
+</job-scheduling-data>

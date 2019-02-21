@@ -1,0 +1,294 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Windows服务管理</title>
+    <link href="~/Content/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/layer/theme/default/layer.css" rel="stylesheet" />
+    <script src="~/Content/js/jquery.min.js"></script>
+    <script src="~/Content/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/Content/js/doT.min.js"></script>
+    <script src="~/Content/layer/layer.js"></script>
+    <script src="~/Content/js/clipboard.min.js"></script>
+    <style>
+        .list-group-item2 { position: relative; display: block; padding: 10px 15px; margin-bottom: -1px; background-color: #fff; border: 0; }
+        .list-group-item3 { position: relative; display: block; padding: 10px; background-color: #fff; border-bottom: 1px solid #808080 }
+        div.panel { margin-bottom: 0px; }
+        hr { margin-top: 5px; margin-bottom: 5px; }
+        .col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-md-1, .col-md-10, .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-xs-1, .col-xs-10, .col-xs-11, .col-xs-12, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9 { padding-left: 0; padding-right: 0; }
+        p { margin: 0 0 3px; }
+        .btn-group { margin-bottom: 5px; }
+    </style>
+</head>
+<body style="height:100%">
+    <div class="container" style="height:100%">
+        <div class="col-md-7">
+            <ul class="list-group" id="list">
+                <li class="list-group-item2">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">Windows服务</div>
+                        <div class="panel-body">
+                            <button type="button" class="btn btn-default" onclick="getServiceInfo(this)">获取 Windows 服务配置信息</button>
+                            <a class="btn btn-default" href="/Cron" target="_blank">Cron表达式生成器</a>
+                            <hr />
+                            <div id="services"></div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="col-md-5" style="height:100%">
+            <div class="panel panel-success" style="margin-top:10px;height:100%">
+                <div class="panel-heading">操作日志</div>
+                <div class="panel-body">
+                    <ul class="list-group" id="log"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script id="services-tpl" type="text/template">
+        {{ for (var i = 0; i < it.items.length; i++) { }}
+        {{ var item=it.items[i]; }}
+        {{ if(item==null){ continue;} }}
+        @*{{ if( item.JobInfos.length==0){ continue;} }}*@
+        <div class="btn-group" role="group">
+            <div class="btn btn-default" style="cursor:auto">[{{= item.NameCn }}]</div>
+            <button type="button" class="btn btn-default" data-serviceName="{{= item.Name }}" data-action="start" onclick="runService(this)"> 开启</button>
+            <button type="button" class="btn btn-default" data-serviceName="{{= item.Name }}" data-action="stop" onclick="runService(this)"> 停止</button>
+
+            {{ if( item.JobInfos.length>0){   }}
+            {{ var copy=""; }}
+            {{ for (var j = 0; j < item.JobInfos.length; j++) {  }}
+            {{ var job=item.JobInfos[j]; }}
+            {{ copy+= "::任务名 " +  job.Description+"\r\n" ; }}
+            {{ copy+= "::配置时间 " + job.CronExpressionDescriptor+"\r\n" ; }}
+            {{ copy+= item.Path+ " " + job.Name+"\r\n\r\n" ; }}
+            {{ } }}
+
+            <a class="btn btn-default  copy" data-clipboard-text="{{= copy }}" title="复制调试命令行">
+                <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
+            </a>
+
+            {{ } }}
+        </div>
+        {{ } }}
+    </script>
+
+    <script id="panel-tpl" type="text/template">
+        {{ for (var i = 0; i < it.items.length; i++) { }}
+        {{ var item=it.items[i]; }}
+        {{ if(item==null){ continue;} }}
+        @*{{ if( item.JobInfos.length==0){ continue;} }}*@
+
+        <li class="list-group-item2">
+            <div class="panel panel-info">
+                <div class="panel-heading">[{{= item.NameCn }}]服务</div>
+                <div class="panel-body">
+                    {{ for (var j = 0; j < item.JobInfos.length; j++) {  }}
+                    {{ var job=item.JobInfos[j]; }}
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-default" data-serviceName="{{= item.Name }}" data-jobName="{{= job.Name }}" onclick="runJob(this)">{{= job.Description }}</button>
+                        <a href="/Service/EditJob?serviceName={{= item.Name }}&jobName={{= job.Name }}&triggerGroup={{= job.TriggerGroup}}&TriggerName={{= job.TriggerName}}&w=500&h=350" title="编辑[{{= job.Description }}]" class="btn btn-default openwin">
+                            <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+                        </a>
+                        <a class="btn btn-default  copy" data-clipboard-text="{{="::任务名 " +  job.Description+"\r\n" +"::配置时间 " + job.CronExpressionDescriptor+"\r\n" + item.Path+" "+ job.Name }}" title="复制调试命令行">
+                            <span class="glyphicon glyphicon-duplicate" aria-hidden="true"></span>
+                        </a>
+                    </div>
+                    {{ } }}
+                </div>
+            </div>
+        </li>
+        {{ } }}
+    </script>
+
+
+    <script type="text/template" id="getServiceInfo-tpl">
+        <li class="list-group-item3">
+            <div>时间：{{= it.date }}</div>
+            {{ for (var i = 0; i < it.items.length; i++) { }}
+            {{ var item=it.items[i]; }}
+            {{ if(item==null){ continue;} }}
+
+            <div>
+                <p>
+                    <span style="font-weight:700;">{{= item.NameCn }}({{= item.Name }})</span> 服务任务如下：
+                    {{ if(item.IsRun){ }}
+                    <span class="label label-success">运行中</span>
+                    {{ }else{ }}
+                    <span class="label label-danger">未运行</span>
+                    {{ } }}
+                </p>
+                {{ for (var j = 0; j < item.JobInfos.length; j++) {  }}
+                {{ var job=item.JobInfos[j]; }}
+                <p style="text-indent:1em">{{= job.Description }}</p>
+                @*<p style="text-indent:3em">{{= job.Name }}</p>*@
+                <p style="text-indent:3em">时间配置：{{= job.CronExpressionDescriptor }}</p>
+                <p style="text-indent:3em">下次执行：{{= job.NextStartTime }}</p>
+                {{ } }}
+            </div>
+            {{ } }}
+        </li>
+    </script>
+    <script type="text/template" id="tpl">
+        <li class="list-group-item3">
+            <div>时间：{{= it.date }}</div>
+            {{ if(it.code==1){ }}
+            <div>
+                <span class="label label-info">成功</span>{{= it.msg }}
+            </div>
+            {{ }else{ }}
+            <div>
+                <span class="label label-danger">失败</span>{{= it.msg }}
+            </div>
+            {{ } }}
+        </li>
+    </script>
+
+
+    <script>
+        $(function () {
+            $.post("/Service/GetAllServiceInfos", {}, function (r) {
+                var html = doT.template($("#services-tpl").text())(r);
+                $("#services").append(html);
+                html = doT.template($("#panel-tpl").text())(r);
+                $("#list").append(html);
+                html = doT.template($("#getServiceInfo-tpl").text())(r);
+                $("#log").prepend(html);
+
+                $('.openwin').click(function (event) {
+                    event && event.stopPropagation();
+                    var t = this.title || this.name || null;
+                    var a = this.href || this.alt;
+                    OpenWin2(t, a)
+                    return false;
+                });
+                new ClipboardJS('.copy');
+            });
+
+        })
+
+
+        function getServiceInfo(obj) {
+            $("button").prop("disabled", true);
+            var names = [];
+            $("button").each(function () {
+                var name = $(this).attr("data-serviceName")
+                if (name != null && name != undefined) {
+                    names.push(name);
+                }
+            });
+            $.post("/Service/GetServiceInfos", { serviceNames: names.join(",") }, function (r) {
+                if (r.code == 1) {
+                    var html = doT.template($("#getServiceInfo-tpl").text())(r);
+                    $("#log").prepend(html);
+                } else {
+                    var html = doT.template($("#tpl").text())(r);
+                    $("#log").prepend(html);
+                }
+                $("button").prop("disabled", false);
+                new ClipboardJS('.copy');
+            });
+            for (var i = 0; i < length; i++) {
+                continue;
+            }
+        }
+        function runService(obj) {
+            $("button").prop("disabled", true);
+            var name = $(obj).attr("data-serviceName");
+            var action = $(obj).attr("data-action");
+            if (action == "start") {
+                $.post("/Service/StartServer", { serviceName: name }, function (r) {
+                    var html = doT.template($("#tpl").text())(r);
+                    $("#log").prepend(html);
+
+                    $("button").prop("disabled", false);
+                });
+            } else {
+                $.post("/Service/StopServer", { serviceName: name }, function (r) {
+                    var html = doT.template($("#tpl").text())(r);
+                    $("#log").prepend(html);
+
+                    $("button").prop("disabled", false);
+                });
+            }
+        }
+        function runJob(obj) {
+            $("button").prop("disabled", true);
+            var name = $(obj).attr("data-serviceName");
+            var job = $(obj).attr("data-jobName");
+            $.ajax({
+                type: "POST",
+                url: "/Service/RunJob",
+                data: { serviceName: name, jobName: job },
+                dataType: "json",
+                success: function (r) {
+                    var html = doT.template($("#tpl").text())(r);
+                    $("#log").prepend(html);
+
+                    $("button").prop("disabled", false);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    layer.msg("执行出错！");
+                    $("button").prop("disabled", false);
+                }
+            });
+        }
+
+
+
+        var Request = {
+            QueryString: function (val, url) {
+                var re = new RegExp("" + val + "=([^&?]*)", "ig");
+                return ((url.match(re)) ? (decodeURI(url.match(re)[0].substr(val.length + 1))) : '');
+            }
+        }
+        function OpenWin(t, a) {
+            var w = Request.QueryString('w', a);
+            var h = Request.QueryString('h', a);
+            w = ((w == null || w == '')) ? ($('body').width() - 100) : w;
+            h = ((h == null || h == '')) ? ($('body').height() - 100) : h;
+            var isMaxMin = false;
+            layer.open({
+                type: 2,
+                area: [w + 'px', h + 'px'],
+                fix: true,
+                maxmin: isMaxMin,
+                shade: 0.4,
+                title: t,
+                anim: -1,
+                content: [a],
+                scrollbar: true,
+                shadeClose: false,
+                maxmin: true,
+                success: function (layer) {
+                }
+            });
+        }
+        function OpenWin2(t, a) {
+            a = (a.indexOf("?") > 0) ? (a + "&_random=" + Math.random() * 1000) : (a + "?_random=" + Math.random() * 1000)
+            if (window != top) {
+                //console.log(parent.layer.getFrameIndex(window.name));
+
+                top.OpenWin(t, a);
+            } else {
+                OpenWin(t, a);
+            }
+            this.blur();
+            return false;
+        }
+
+
+    </script>
+
+
+</body>
+</html>
