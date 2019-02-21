@@ -14,7 +14,7 @@
       <name>HelloWorldTask</name>
       <group>jobGroup1</group>
       <description>定时任务配置</description>
-      <job-type>App.ScheduleTask.HelloWorldTask, WindowsServiceTaskDemo</job-type>
+      <job-type>WindowsServiceTaskDemo.Tasks.HelloWorldTask, WindowsServiceAsyncTaskDemo</job-type>
       <durable>true</durable>
       <recover>false</recover>
     </job>

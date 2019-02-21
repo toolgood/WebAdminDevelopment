@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsServiceAsyncTaskDemo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demos", "Demos", "{929572CF-7E51-4A8F-8247-E304BE33AECF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsServiceTaskDemo.Core", "WindowsServiceTaskDemo.Core\WindowsServiceTaskDemo.Core.csproj", "{518E9E8D-2760-46D0-B95C-9C158F018882}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,10 @@ Global
 		{06F1D85A-C4CE-45CC-BCDC-DEE90D038FA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06F1D85A-C4CE-45CC-BCDC-DEE90D038FA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06F1D85A-C4CE-45CC-BCDC-DEE90D038FA5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{518E9E8D-2760-46D0-B95C-9C158F018882}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{518E9E8D-2760-46D0-B95C-9C158F018882}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{518E9E8D-2760-46D0-B95C-9C158F018882}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{518E9E8D-2760-46D0-B95C-9C158F018882}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -36,6 +42,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{1EAB7BB4-8446-423C-BC81-3B0025587034} = {929572CF-7E51-4A8F-8247-E304BE33AECF}
 		{06F1D85A-C4CE-45CC-BCDC-DEE90D038FA5} = {929572CF-7E51-4A8F-8247-E304BE33AECF}
+		{518E9E8D-2760-46D0-B95C-9C158F018882} = {929572CF-7E51-4A8F-8247-E304BE33AECF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D70D6353-FA69-404D-A6DC-85BF671F041B}
